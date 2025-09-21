@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | MyStore</title>
+  <meta name="description" content="Shop premium sneakers at MyStore. High-performance, stylish, and durable footwear for every occasion.">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+      background: white;
+      color: black;
+    }
+    .product {
+      display: flex;
+      gap: 30px;
+      flex-wrap: wrap;
+    }
+    .image-section {
+      flex: 1;
+      min-width: 300px;
+      position: relative;
+    }
+    .main-image {
+      width: 100%;
+      height: 350px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    /* Arrows on main image */
+   .image-arrow {
+  position: absolute;
+  top: 30%;                /* adjust as needed */
+  background: rgba(255, 255, 255, 0.569);        /* default background */
+  color: black;             /* icon color */
+  border: 1px solid rgb(0, 0, 0);  /* white border */
+  font-size: 22px;          /* arrow size */
+  padding: 10px 14px;       /* spacing inside */
+  cursor: pointer;
+  border-radius: 50%;       /* circle */
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+   display: flex;
+  align-items: center;      /* vertical center */
+  justify-content: center;  /* horizontal center */
+  transition: all 0.3s ease;
+  line-height: 1;           /* removes extra spacing */
+}
+
+.image-arrow:hover {
+  background: black;       /* turns black */
+  color: white;            /* icon turns white */
+  border-color: rgb(255, 255, 255);     /* border blends */
+}
+
+    .image-arrow.left {
+      left: 10px;
+    }
+    .image-arrow.right {
+      right: 10px;
+    }
+    .thumbnails {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      overflow-x: auto;
+      padding-bottom: 5px;
+    }
+    .thumbnails::-webkit-scrollbar {
+      height: 6px;
+    }
+    .thumbnail {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 5px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      flex: 0 0 auto;
+    }
+    .thumbnail.active {
+      border: 2px solid black;
+    }
+    .details {
+      flex: 1;
+      min-width: 300px;
+    }
+    .details h2 {
+      margin: 0 0 10px;
+    }
+    .price {
+      font-size: 1.4em;
+      margin: 10px 0;
+      color: black;
+    }
+    .description, .long-description {
+      margin: 15px 0;
+      line-height: 1.6;
+    }
+    .features {
+      margin: 20px 0;
+    }
+    .features ul {
+      padding-left: 20px;
+    }
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 20px;
+      background: black;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+    .btn:hover {
+      background: white;
+      color: black;
+      border: 1px solid black;
+    }
+
+    /* Related products */
+    .related-section {
+      margin-top: 60px;
+    }
+    .related-section h3 {
+      margin-bottom: 20px;
+    }
+    .carousel-wrapper {
+      position: relative;
+    }
+    .carousel {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      padding-bottom: 10px;
+    }
+    .carousel::-webkit-scrollbar {
+      display: none;
+    }
+    .product-card {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      min-width: 200px;
+      flex: 0 0 auto;
+      text-align: center;
+      transition: transform 0.3s;
+      border: 1px solid #ddd;
+    }
+    .product-card:hover {
+      transform: translateY(-5px);
+    }
+    .product-card img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .product-card h4, 
+    .product-card p {
+      color: black;
+      margin: 5px 0;
+    }
+    
+    .carousel-btn.left {
+      left: -10px;
+    }
+    .carousel-btn.right {
+      right: -10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="product-details" class="product"></div>
+
+    <div class="related-section">
+      <h3>You May Also Like</h3>
+      <div class="carousel-wrapper">
+        <button class="image-arrow left" onclick="scrollCarousel(-1)">&#10094;</button>
+        <div id="related-carousel" class="carousel"></div>
+        <button class="image-arrow right" onclick="scrollCarousel(1)">&#10095;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7IIHG7txvgUwgthDOf3CtGLVdbmLk_X0",
+      authDomain: "kamandell.firebaseapp.com",
+      projectId: "kamandell-8bc28"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const productId = new URLSearchParams(window.location.search).get("id");
+    let currentImageIndex = 0;
+    let currentImages = [];
+
+    function renderProduct(p) {
+      currentImages = Array.isArray(p.image) ? p.image : [p.image];
+      const thumbnails = currentImages.map((img, i) => `
+        <img src="${img}" class="thumbnail ${i === 0 ? 'active' : ''}" onclick="showImage(${i}, this)">
+      `).join("");
+
+      // SEO-friendly title + meta description
+      document.title = `${p.name} | Buy Online - MyStore`;
+      if (p.shortDescription) {
+        document.querySelector('meta[name="description"]').setAttribute("content", p.shortDescription);
+      }
+
+      // Long description structure
+      const descriptionHtml = `
+        <p class="description">${p.shortDescription || ""}</p>
+        <p class="long-description">${p.longDescriptionTop || ""}</p>
+        <div class="features">
+          <h4>${p.longDescriptionBottom?.intro || "Features:"}</h4>
+          <ul>
+            ${(p.longDescriptionBottom?.features || []).map(f => `<li>${f}</li>`).join("")}
+          </ul>
+          <p>${p.longDescriptionBottom?.closing || ""}</p>
+        </div>
+      `;
+
+      document.getElementById("product-details").innerHTML = `
+        <div class="image-section">
+          <img id="main-image" src="${currentImages[0]}" class="main-image">
+          <button class="image-arrow left" onclick="navigateImage(-1)">&#10094;</button>
+          <button class="image-arrow right" onclick="navigateImage(1)">&#10095;</button>
+          <div class="thumbnails">${thumbnails}</div>
+        </div>
+        <div class="details">
+          <h2>${p.name}</h2>
+          <p><strong>Brand:</strong> ${p.brand}</p>
+          <p class="price">₦${p.price.toLocaleString()}</p>
+          ${descriptionHtml}
+          <a href="#" class="btn">Add to Cart</a>
+        </div>
+      `;
+
+      // Touch support for swiping images
+      const mainImage = document.getElementById("main-image");
+      let startX = 0;
+      mainImage.addEventListener("touchstart", e => startX = e.touches[0].clientX);
+      mainImage.addEventListener("touchend", e => {
+        let diff = e.changedTouches[0].clientX - startX;
+        if (diff > 50) navigateImage(-1);
+        if (diff < -50) navigateImage(1);
+      });
+    }
+
+    function showImage(index, el) {
+      currentImageIndex = index;
+      document.getElementById("main-image").src = currentImages[index];
+      document.querySelectorAll(".thumbnail").forEach(t => t.classList.remove("active"));
+      el.classList.add("active");
+    }
+
+    function navigateImage(direction) {
+      currentImageIndex = (currentImageIndex + direction + currentImages.length) % currentImages.length;
+      document.getElementById("main-image").src = currentImages[currentImageIndex];
+      document.querySelectorAll(".thumbnail").forEach((t, i) => {
+        t.classList.toggle("active", i === currentImageIndex);
+      });
+    }
+
+    function renderRelated(products) {
+      const container = document.getElementById("related-carousel");
+      container.innerHTML = products.map(p => `
+        <div class="product-card">
+          <a href="product.html?id=${p.id}" style="text-decoration:none;">
+            <img src="${Array.isArray(p.image) ? p.image[0] : p.image}" alt="${p.name}">
+            <h4>${p.name}</h4>
+            <p>₦${p.price.toLocaleString()}</p>
+          </a>
+        </div>
+      `).join("");
+    }
+
+    function scrollCarousel(direction) {
+      const carousel = document.getElementById("related-carousel");
+      const scrollAmount = 250;
+      carousel.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+    }
+
+    async function loadProduct() {
+      if (!productId) return;
+      const doc = await db.collection("products").doc(productId).get();
+      if (doc.exists) {
+        const product = { id: doc.id, ...doc.data() };
+        renderProduct(product);
+        loadRelated(product);
+      }
+    }
+
+    async function loadRelated(currentProduct) {
+      let query = db.collection("products");
+      query = query.where("brand", "==", currentProduct.brand);
+
+      const snapshot = await query.get();
+      let related = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(p => p.id !== currentProduct.id);
+
+      if (related.length === 0 && currentProduct.tags) {
+        query = db.collection("products").where("tags", "array-contains", currentProduct.tags[0]);
+        const snap2 = await query.get();
+        related = snap2.docs.map(doc => ({ id: doc.id, ...doc.data() })).filter(p => p.id !== currentProduct.id);
+      }
+
+      renderRelated(related);
+    }
+
+    loadProduct();
+  </script>
+</body>
+</html>

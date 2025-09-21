@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Just Arrived — Auto Scroll</title>
+  <style>
+    :root{
+      --card-w: 450px;
+      --gap: 20px;
+    }
+   
+
+    section.just-arrived3{
+      max-width:1600px;
+      margin:60px auto;
+      padding:0 20px;
+      overflow:hidden;
+      position:relative;
+      
+    }
+
+    section.just-arrived3 h2{
+      text-align:center;
+      font-size:2.8rem;
+      margin-bottom:24px;
+    }
+
+    /* Carousel container */
+    .products-carousel3{
+      display:flex;
+      gap:var(--gap);
+      align-items:stretch;
+      overflow-x:auto;
+      scroll-behavior:auto; /* we control scrollLeft manually */
+      -webkit-overflow-scrolling: touch;
+    }
+    .products-carousel3::-webkit-scrollbar{ display:none; }
+    .products-carousel3 a { text-decoration:none; color:inherit; }
+
+    .product-card3{
+      flex:0 0 var(--card-w);
+      width:var(--card-w);
+      background:#fff;
+      border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      overflow:hidden;
+      transition:transform .22s ease;
+      display:flex;
+      flex-direction:column;
+      cursor:pointer;
+    }
+    .product-card3:hover{ transform:translateY(-6px); }
+
+    .product-card3 img{
+      width:100%;
+      height:360px;
+      object-fit:cover;
+      display:block;
+      flex-shrink:0;
+    }
+
+    .product-info3{
+      padding:12px;
+      text-align:center;
+      flex:1 1 auto;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+    .product-info3 h3{
+      margin:0 0 2px;
+      font-size:1.45rem;
+      color:#222;
+      line-height:1.2;
+      min-height:2.4em; /* keep cards aligned when titles wrap */
+    }
+    .product-info3 p{
+      margin:0;
+      font-weight:700;
+      color:#ff4d4d;
+    }
+
+    /* Responsive */
+    @media (max-width:1024px){
+      :root { --card-w: 210px; }
+      .product-card3 img{ height:340px; }
+    }
+    @media (max-width:768px){
+      :root { --card-w: 45vw; } /* show roughly two per view on tablet */
+      .product-card3 img{ height:240px; }
+    }
+    @media (max-width:480px){
+      :root { --card-w: 85vw; } /* mobile: almost full width */
+      .product-card3 img{ height:200px; }
+    }
+
+    /* small message */
+    .msg {
+      padding:24px; text-align:center; color:#666;
+    }
+  </style>
+</head>
+<body>
+
+<section class="just-arrived3">
+  <h2>Just Arrived</h2>
+  <div class="products-carousel3" id="justArrivedProducts" aria-live="polite" role="region">
+    <!-- items injected here -->
+  </div>
+</section>
+
+<!-- Firebase v9 modular -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+  import { getFirestore, collection, query, where, orderBy, limit, getDocs } 
+    from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyD7IIHG7txvgUwgthDOf3CtGLVdbmLk_X0",
+    authDomain: "kamandell.firebaseapp.com",
+    projectId: "kamandell-8bc28",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const container = document.getElementById('justArrivedProducts');
+
+  async function loadJustArrived(){
+    container.innerHTML = '';
+    try {
+      const q = query(
+        collection(db, 'products'),
+        where('status', '==', 'published'),
+        orderBy('createdAt', 'desc'),
+        limit(8)
+      );
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        container.innerHTML = '<div class="msg">No new arrivals yet.</div>';
+        return;
+      }
+
+      const items = [];
+      snap.forEach(doc => {
+        const p = doc.data();
+        const id = doc.id;
+        items.push({ id, ...p });
+      });
+
+      // render items (as anchor tags pointing to product page)
+      const fragment = document.createDocumentFragment();
+      items.forEach(product => {
+        const a = document.createElement('a');
+        a.href = '/product.html?id=' + encodeURIComponent(product.id);
+        a.className = 'product-link';
+        a.innerHTML = `
+          <article class="product-card3" aria-label="${escapeHtml(product.name || 'Product')}">
+            <img src="${escapeHtml(product.image || 'https://via.placeholder.com/500x300?text=No+image')}" alt="${escapeHtml(product.name || 'Product image')}">
+            <div class="product-info3">
+              <h3>${escapeHtml(product.name || 'Untitled')}</h3>
+              <p>${formatPrice(product.price)}</p>
+            </div>
+          </article>
+        `;
+        fragment.appendChild(a);
+      });
+
+      // Append original set
+      container.appendChild(fragment);
+
+      // Duplicate nodes to enable seamless loop
+      // cloneNodes() : we clone the children and append them
+      const originalChildren = Array.from(container.children);
+      originalChildren.forEach(node => {
+        const clone = node.cloneNode(true);
+        // remove aria-live duplicates from clones to avoid redundancy
+        clone.removeAttribute('aria-hidden');
+        container.appendChild(clone);
+      });
+
+      // Start auto-scroller
+      startAutoScroll(container);
+
+    } catch (err) {
+      console.error('Error loading products:', err);
+      container.innerHTML = `<div class="msg">Failed to load products: ${escapeHtml(err.message || err.toString())}</div>`;
+    }
+  }
+
+  // helper: HTML escape
+  function escapeHtml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // helper: price formatting (simple)
+  function formatPrice(value){
+  if (value == null) return '';
+  return '₦' + Number(value).toLocaleString('en-NG'); 
+}
+
+
+  /* ---------- Auto-scroll engine (seamless) ---------- */
+  function startAutoScroll(carouselEl){
+    // if not enough children, do nothing
+    if (!carouselEl || carouselEl.children.length === 0) return;
+
+    // compute original width (half of scrollWidth since we duplicated)
+    // Wait a tick to ensure layout done:
+    requestAnimationFrame(() => {
+      const halfWidth = carouselEl.scrollWidth / 2;
+      if (!isFinite(halfWidth) || halfWidth <= 0) return;
+
+      let paused = false;
+      let rafId = null;
+      const pxPerSecond = 60; // adjust speed: px per second
+      let lastTime = null;
+
+      function step(ts){
+        if (lastTime === null) lastTime = ts;
+        const dt = ts - lastTime;
+        lastTime = ts;
+
+        if (!paused) {
+          const px = (pxPerSecond * dt) / 1000;
+          carouselEl.scrollLeft += px;
+
+          // seamless loop: if we've scrolled past the original half, subtract halfWidth
+          if (carouselEl.scrollLeft >= halfWidth) {
+            // subtract exact halfWidth to keep visually seamless 
+            carouselEl.scrollLeft -= halfWidth;
+          }
+        }
+        rafId = requestAnimationFrame(step);
+      }
+
+      // pause/resume handlers
+      const pause = () => { paused = true; };
+      const resume = () => { paused = false; lastTime = null; };
+
+      // Pause on pointer hover/focus/touch and page visibility
+      carouselEl.addEventListener('mouseenter', pause, { passive:true });
+      carouselEl.addEventListener('mouseleave', resume, { passive:true });
+      carouselEl.addEventListener('touchstart', pause, { passive:true });
+      carouselEl.addEventListener('touchend', resume, { passive:true });
+      carouselEl.addEventListener('focusin', pause, { passive:true });
+      carouselEl.addEventListener('focusout', resume, { passive:true });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) paused = true;
+        else resume();
+      });
+
+      // Start animation
+      rafId = requestAnimationFrame(step);
+
+      // store on element for optional external stop control
+      carouselEl._autoscroll = { stop: () => { if (rafId) cancelAnimationFrame(rafId); } };
+    });
+  }
+
+  // Init
+  loadJustArrived();
+
+</script>
+</body>
+</html>

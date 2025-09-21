@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Admin — Dashboard</title>
+  <style>
+    body{font-family:Inter,system-ui;background:#0b0c0f;color:#e6e9ef;padding:24px}
+    .card{background:#13151a;padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,.04)}
+    input,select,textarea{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;width:100%;margin-bottom:10px}
+    button{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+    .paid{background:#16a34a;color:white}
+    .pending{background:#f59e0b;color:#111}
+    ul{margin:6px 0;padding-left:18px}
+    li{margin-bottom:4px}
+    .hidden{display:none}
+  </style>
+  <!-- Firebase compat SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+  <h1>Admin — Dashboard</h1>
+
+  <!-- 🔹 Admin login -->
+  <div id="authUI" class="card">
+    <h3>Admin sign in</h3>
+    <form id="loginForm">
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input id="email" type="email" placeholder="admin@example.com" required />
+        <input id="password" type="password" placeholder="password" required />
+      </div>
+      <button type="submit">Sign in</button>
+    </form>
+    <div style="margin-top:8px;">
+      <button id="signOutBtn" class="hidden">Sign out</button>
+    </div>
+    <div id="authMsg" style="margin-top:8px;color:#fca5a5"></div>
+  </div>
+
+  <!-- 🔹 Add Product Form (hidden until admin logs in) -->
+  <div id="productForm" class="card hidden">
+    <h3>Add Product</h3>
+    <form id="addProductForm">
+      <input type="text" id="pSKU" placeholder="SKU / Product ID" required />
+      <input type="text" id="pName" placeholder="Product name" required />
+      <input type="text" id="pBrand" placeholder="Brand" />
+      <input type="number" id="pPrice" placeholder="Price (₦)" required />
+
+      <!-- Multiple images -->
+      <input type="url" id="pImage1" placeholder="Image URL 1 (https://...)" required />
+      <input type="url" id="pImage2" placeholder="Image URL 2 (https://...)" required />
+      <input type="url" id="pImage3" placeholder="Image URL 3 (https://...)" required />
+
+      <!-- Descriptions -->
+      <textarea id="pShortDesc" placeholder="Short description (1–2 lines)" required></textarea>
+      <textarea id="pLongTop" placeholder="Long description top (paragraph)" required></textarea>
+      <textarea id="pIntro" placeholder="Intro (for longDescriptionBottom)" required></textarea>
+
+      <!-- Features -->
+      <input type="text" id="pFeature1" placeholder="Feature 1" required />
+      <input type="text" id="pFeature2" placeholder="Feature 2" required />
+      <input type="text" id="pFeature3" placeholder="Feature 3" required />
+      <input type="text" id="pFeature4" placeholder="Feature 4" required />
+      <input type="text" id="pFeature5" placeholder="Feature 5 (optional)" />
+      <input type="text" id="pFeature6" placeholder="Feature 6 (optional)" />
+
+      <textarea id="pClosing" placeholder="Closing (for longDescriptionBottom)" required></textarea>
+
+      <!-- Category dropdown -->
+      <select id="pCategory" required>
+        <option value="">Select category</option>
+        <option value="shoes">Shoes</option>
+        <option value="slides">Slides</option>
+        <option value="jersey">Jersey</option>
+        <option value="bags">Bags</option>
+        <option value="electronics">Electronics</option>
+      </select>
+
+      <!-- Tags & misc -->
+      <input type="text" id="pTags" placeholder="Tags (comma separated)" />
+      <input type="text" id="pBadge" placeholder="Badge (optional)" />
+      <select id="pStatus">
+        <option value="available in store">Available in store</option>
+        <option value="not available in store">Not available in store</option>
+      </select>
+      <button type="submit">Save Product</button>
+    </form>
+    <div id="productMsg" style="margin-top:8px;color:#a5b4fc"></div>
+  </div>
+
+  <!-- 🔹 Orders Section -->
+  <div id="ordersContainer" class="hidden"></div>
+
+  <script>
+    // ✅ Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7IIHG7txvgUwgthDOf3CtGLVdbmLk_X0",
+      authDomain: "kamandell-8bc28.firebaseapp.com",
+      projectId: "kamandell-8bc28",
+      storageBucket: "kamandell-8bc28.appspot.com",
+      messagingSenderId: "934323437689",
+      appId: "1:934323437689:web:47e900bf0b215c0fa114a8",
+      measurementId: "G-NNXYVJJ1J3"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    // Elements
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const authMsg = document.getElementById('authMsg');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const ordersContainer = document.getElementById('ordersContainer');
+    const productForm = document.getElementById('productForm');
+    const addProductForm = document.getElementById('addProductForm');
+    const productMsg = document.getElementById('productMsg');
+
+    // 🔹 Login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      authMsg.textContent = '';
+      try {
+        await auth.signInWithEmailAndPassword(emailInput.value, passwordInput.value);
+
+        loginForm.style.display = 'none';
+        signOutBtn.classList.remove('hidden');
+        productForm.classList.remove('hidden');
+        ordersContainer.classList.remove('hidden');
+
+        loadOrders();
+      } catch(err) {
+        console.error(err);
+        authMsg.textContent = err.message || 'Sign-in failed';
+      }
+    });
+
+    // 🔹 Sign out
+    signOutBtn.addEventListener('click', async ()=> {
+      await auth.signOut();
+      loginForm.style.display = 'block';
+      signOutBtn.classList.add('hidden');
+      productForm.classList.add('hidden');
+      ordersContainer.classList.add('hidden');
+      ordersContainer.innerHTML = '';
+    });
+
+    // 🔹 Save Product
+    addProductForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      productMsg.textContent = "Saving product…";
+
+      try {
+        const sku = document.getElementById('pSKU').value.trim();
+        const name = document.getElementById('pName').value.trim();
+        const brand = document.getElementById('pBrand').value.trim();
+        const price = parseFloat(document.getElementById('pPrice').value.trim());
+
+        const image = [
+          document.getElementById('pImage1').value.trim(),
+          document.getElementById('pImage2').value.trim(),
+          document.getElementById('pImage3').value.trim()
+        ].filter(Boolean);
+
+        const shortDescription = document.getElementById('pShortDesc').value.trim();
+        const longDescriptionTop = document.getElementById('pLongTop').value.trim();
+        const intro = document.getElementById('pIntro').value.trim();
+        const closing = document.getElementById('pClosing').value.trim();
+
+        const features = [
+          document.getElementById('pFeature1').value.trim(),
+          document.getElementById('pFeature2').value.trim(),
+          document.getElementById('pFeature3').value.trim(),
+          document.getElementById('pFeature4').value.trim(),
+          document.getElementById('pFeature5').value.trim(),
+          document.getElementById('pFeature6').value.trim()
+        ].filter(Boolean);
+
+        const category = document.getElementById('pCategory').value;
+        const tags = document.getElementById('pTags').value.split(',').map(t => t.trim()).filter(Boolean);
+        const badge = document.getElementById('pBadge').value.trim() || null;
+        const status = document.getElementById('pStatus').value;
+
+        const docRef = await db.collection('products').add({
+          sku,
+          name,
+          brand,
+          category,
+          price,
+          image,
+          shortDescription,
+          longDescriptionTop,
+          longDescriptionBottom: { intro, features, closing },
+          tags,
+          badge,
+          status,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        const productLink = `productpage.html?id=${docRef.id}`;
+
+        productMsg.innerHTML = `✅ Product saved! <br>
+          <a href="${productLink}" target="_blank" style="color:#60a5fa">View product page</a>`;
+        addProductForm.reset();
+
+      } catch(err) {
+        console.error(err);
+        productMsg.textContent = "❌ Error: " + (err.message || err);
+      }
+    });
+
+    // 🔹 Load Orders
+    async function loadOrders(){
+      ordersContainer.innerHTML = '<p>Loading orders…</p>';
+      try {
+        const snap = await db.collection('orders').orderBy('createdAt','desc').get();
+        if(snap.empty){ ordersContainer.innerHTML = '<p>No orders yet</p>'; return; }
+        ordersContainer.innerHTML = '';
+        snap.forEach(docSnap => {
+          const o = docSnap.data();
+          const div = document.createElement('div');
+          div.className = 'card';
+
+          let itemsHtml = '';
+          if (o.items && Array.isArray(o.items) && o.items.length > 0) {
+            itemsHtml = '<div><strong>Items Ordered:</strong><ul>';
+            o.items.forEach(item => {
+              itemsHtml += `<li>${item.name || 'Unnamed'} — ₦${item.price/100 || 0} × ${item.quantity || 1}</li>`;
+            });
+            itemsHtml += '</ul></div>';
+          }
+
+          div.innerHTML = `
+            <div><strong>Order ID:</strong> ${docSnap.id}</div>
+            <div><strong>Buyer:</strong> ${o.buyer?.name || '—'} (${o.buyer?.phone || '—'}) &lt;${o.buyer?.email || '—'}&gt;</div>
+            ${itemsHtml}
+            <div><strong>Amount:</strong> ₦${(o.amount/100).toFixed(2)}</div>
+            <div><strong>Status:</strong> ${o.status}</div>
+            <div style="margin-top:8px">
+              <button class="${o.status==='paid'?'paid':'pending'}" data-id="${docSnap.id}">
+                ${o.status==='paid' ? 'Paid' : 'Mark as Paid'}
+              </button>
+            </div>
+          `;
+
+          const btn = div.querySelector('button');
+          btn.addEventListener('click', async () => {
+            if(o.status==='paid'){ alert('Already paid'); return; }
+            await db.collection('orders').doc(docSnap.id).update({
+              status:'paid',
+              paidAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            alert('Order marked as paid ✅');
+            loadOrders();
+          });
+          ordersContainer.appendChild(div);
+        });
+      } catch(err) {
+        console.error(err);
+        ordersContainer.innerHTML = '<p>Error loading orders. Check console.</p>';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!-- =================== NAVBAR =================== -->
+<nav>
+  <div id="hamburger" class="hamburger">☰</div>
+  <div class="logo">MyLogo</div>
+
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a>
+      <ul class="dropdown">
+        <li><a href="#">Sublink 1</a></li>
+        <li><a href="#">Sublink 2</a></li>
+        <li><a href="#">Sublink 3</a></li>
+        <li><a href="#">Sublink 4</a></li>
+        <li><a href="#">Sublink 5</a></li>
+        <li><a href="#">Sublink 6</a></li>
+      </ul>
+    </li>
+    <li><a href="cartproductnav.html">Shop</a>
+      <ul class="dropdown">
+        <li><a href="#">Men</a></li>
+        <li><a href="#">Women</a></li>
+        <li><a href="#">Kids</a></li>
+        <li><a href="#">Shoes</a></li>
+        <li><a href="#">Accessories</a></li>
+        <li><a href="#">Sale</a></li>
+      </ul>
+    </li>
+    <li><a href="#">About</a>
+      <ul class="dropdown">
+        <li><a href="#">Mission</a></li>
+        <li><a href="#">Vision</a></li>
+        <li><a href="#">Team</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Partners</a></li>
+        <li><a href="#">History</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Blog</a>
+      <ul class="dropdown">
+        <li><a href="#">Latest</a></li>
+        <li><a href="#">News</a></li>
+        <li><a href="#">Tips</a></li>
+        <li><a href="#">Guides</a></li>
+        <li><a href="#">Stories</a></li>
+        <li><a href="#">Reviews</a></li>
+      </ul>
+    </li>
+    <li><a href="#">Contact</a>
+      <ul class="dropdown">
+        <li><a href="#">Email</a></li>
+        <li><a href="#">Phone</a></li>
+        <li><a href="#">Map</a></li>
+        <li><a href="#">Support</a></li>
+        <li><a href="#">Feedback</a></li>
+        <li><a href="#">Chat</a></li>
+      </ul>
+    </li>
+  </ul>
+
+  <div class="icons" style="gap:14px">
+    <i id="openSearch" class="fas fa-search" title="Search"></i>
+    <button id="cartBtn" class="nav-cart-btn" aria-haspopup="dialog" aria-controls="cartPanel" title="Open cart">
+      <span class="cart-icon"><i class="fas fa-shopping-cart"></i></span>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<div id="floatingSearch" class="floating-search">
+  <input type="text" id="q" placeholder="Search products…" />
+</div>
+
+<!-- =================== MOBILE MENU =================== -->
+<div id="mobileMenu" class="mobile-menu" aria-hidden="true">
+  <div>
+    <div id="closeBtn" class="close-btn">×</div>
+    <ul>
+      <li>
+        <a href="#" class="toggle">Home <span class="arrow">›</span></a>
+        <div class="mobile-submenu">
+          <a href="#">Sublink 1</a><a href="#">Sublink 2</a><a href="#">Sublink 3</a>
+          <a href="#">Sublink 4</a><a href="#">Sublink 5</a><a href="#">Sublink 6</a>
+        </div>
+      </li>
+      <li>
+        <a href="#" class="toggle">Shop <span class="arrow">›</span></a>
+        <div class="mobile-submenu">
+          <a href="#">Men</a><a href="#">Women</a><a href="#">Kids</a>
+          <a href="#">Shoes</a><a href="#">Accessories</a><a href="#">Sale</a>
+        </div>
+      </li>
+      <li>
+        <a href="#" class="toggle">About <span class="arrow">›</span></a>
+        <div class="mobile-submenu">
+          <a href="#">Mission</a><a href="#">Vision</a><a href="#">Team</a>
+          <a href="#">Careers</a><a href="#">Partners</a><a href="#">History</a>
+        </div>
+      </li>
+      <li>
+        <a href="#" class="toggle">Blog <span class="arrow">›</span></a>
+        <div class="mobile-submenu">
+          <a href="#">Latest</a><a href="#">News</a><a href="#">Tips</a>
+          <a href="#">Guides</a><a href="#">Stories</a><a href="#">Reviews</a>
+        </div>
+      </li>
+      <li>
+        <a href="#" class="toggle">Contact <span class="arrow">›</span></a>
+        <div class="mobile-submenu">
+          <a href="#">Email</a><a href="#">Phone</a><a href="#">Map</a>
+          <a href="#">Support</a><a href="#">Feedback</a><a href="#">Chat</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <div class="mobile-social">
+    <a href="#"><i class="fab fa-facebook"></i></a>
+    <a href="#"><i class="fab fa-twitter"></i></a>
+    <a href="#"><i class="fab fa-instagram"></i></a>
+    <a href="#"><i class="fab fa-linkedin"></i></a>
+  </div>
+</div>
+
+<!-- =================== CART DRAWER =================== -->
+<aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+  <div class="cart-head">
+    <strong id="cartTitle">Your Cart</strong>
+    <button id="closeCart" class="btn btn-ghost">Close</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-foot">
+    <div class="total"><span>Subtotal</span> <strong id="subtotal">₦0</strong></div>
+    <div class="row" style="display:flex;gap:10px;align-items:center">
+      <span class="pill">Orders above ₦200,000 → Free shipping</span>
+      <button id="checkoutBtn" class="btn btn-primary" style="flex:1">Checkout</button>
+    </div>
+  </div>
+</aside>
+
+<!-- =================== CHECKOUT OVERLAY =================== -->
+<div id="checkoutOverlay" class="overlay" aria-hidden="true">
+  <div class="checkout-card" role="dialog" aria-modal="true">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <h3 style="margin:0">Complete Payment — Bank Transfer</h3>
+      <button id="closeCheckout" class="btn btn-ghost">Close</button>
+    </div>
+
+    <div class="checkout-grid">
+      <!-- Buyer form -->
+      <div>
+        <label class="muted">Full name</label><br>
+        <input id="custName" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+
+        <div style="display:flex;gap:12px;margin-top:12px">
+          <div style="flex:1">
+            <label class="muted">Email</label><br>
+            <input id="custEmail" type="email" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+          </div>
+          <div style="width:180px">
+            <label class="muted">WhatsApp phone</label><br>
+            <input id="custPhone" placeholder="+2348012345678" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="muted">Order note</label><br>
+          <textarea id="orderNote" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"></textarea>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button id="confirmPaymentBtn" class="btn btn-primary">Payment Done — Save Order</button>
+          <button id="cancelCheckout" class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Bank details / summary -->
+      <div class="bank">
+        <div style="margin-bottom:8px"><strong>Bank Details</strong></div>
+        <div style="margin-bottom:6px"><div class="muted">Bank</div><div id="bankName" style="font-weight:700">[REPLACE_BANK_NAME]</div></div>
+        <div style="margin-bottom:6px"><div class="muted">Account name</div><div id="accountName" style="font-weight:700">[REPLACE_ACCOUNT_NAME]</div></div>
+        <div style="margin-bottom:6px"><div class="muted">Account number</div><div id="accountNumber" style="font-weight:700">[REPLACE_ACCOUNT_NUMBER]</div></div>
+        <div style="margin-top:8px;color:var(--muted);font-size:13px">Use the order code as payment reference</div>
+
+        <hr style="opacity:.06;margin:10px 0">
+
+        <div style="margin-bottom:8px">
+          <div class="muted">Order code</div>
+          <div id="orderCode" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+        </div>
+
+        <div style="margin-bottom:8px">
+          <div class="muted">Amount to pay</div>
+          <div id="amountToPay" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+        </div>
+
+        <div class="muted" style="margin-top:6px">1) Transfer the exact amount to the bank account above.</div>
+        <div class="muted">2) Send your transfer receipt + order code to our WhatsApp.</div>
+
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <a id="whatsappLink" class="btn btn-primary" href="#" target="_blank" style="flex:1;text-align:center">Send Receipt on WhatsApp</a>
+        </div>
+
+        <p class="muted" style="margin-top:12px;font-size:13px">Orders stay <strong>Pending</strong> until payment is confirmed in admin.</p>
+      </div>
+    </div>
+  </div>
+</div>

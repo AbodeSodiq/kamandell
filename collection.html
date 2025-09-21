@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MyStore — Dark UI (Bank Transfer)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0c0f; --card:#13151a; --text:#e6e9ef; --muted:#a5adbb; --brand:#4f46e5; --danger:#ef4444;
+      --shadow:0 10px 30px rgba(0,0,0,.35); --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:radial-gradient(1200px 800px at 80% -100px,#1a1f2e,var(--bg)); color:var(--text)}
+     nav {
+      width: 100%;
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .logo { font-size: 22px; font-weight: bold; color: #fff; }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+      list-style: none;
+    }
+
+    .nav-links li { position: relative; }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #fff;
+      padding: 8px;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: #00bcd4; }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #222;
+      list-style: none;
+      min-width: 180px;
+      padding: 10px 0;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .dropdown li a { display: block; padding: 10px 20px; color: #fff; }
+    .nav-links li:hover .dropdown { display: block; opacity: 1; transform: translateY(0); }
+
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icons i { cursor: pointer; font-size: 20px; transition: color 0.3s; color:#fff; }
+    .icons i:hover { color: #00bcd4; }
+
+    .hamburger { display: none; font-size: 26px; cursor: pointer; color:#fff; }
+
+    /* Mobile menu */
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 280px;
+      height: 100vh;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+      transition: left 0.3s ease;
+      z-index: 2000;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .mobile-menu.active { left: 0; }
+    .close-btn { font-size: 26px; cursor: pointer; text-align: right; margin-bottom: 20px; color:#fff; }
+    .mobile-menu ul { list-style: none; padding: 0; }
+    .mobile-menu li { border-bottom: 1px solid #222; }
+    .mobile-menu a.toggle {
+      display: flex; align-items: center; justify-content: space-between; padding: 12px; text-decoration: none; color: #fff; cursor: pointer;
+    }
+    .mobile-menu a.toggle:hover { background: #00bcd4; color: #111; }
+    .arrow { transition: transform 0.3s; }
+    .mobile-menu li.active .arrow { transform: rotate(90deg); }
+    .mobile-submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #222; }
+    .mobile-submenu a { display: block; padding: 10px 28px; font-size: 14px; color: #fff; text-decoration: none; }
+    .mobile-submenu a:hover { background: #00bcd4; color: #111; }
+    .mobile-menu li.active .mobile-submenu { max-height: 500px; }
+    .mobile-social { display: flex; justify-content: center; gap: 20px; margin: 30px 0; }
+    .mobile-social a svg { width: 26px; height: 26px; fill: #fff; transition: fill 0.3s; }
+    .mobile-social a:hover svg { fill: #00bcd4; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; } /* hide only the links */
+      .hamburger { display: block; }
+      nav .logo { position: absolute; left: 50%; transform: translateX(-50%); }
+    }
+
+/* Small helper for navbar cart button */
+    .nav-cart-btn {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:transparent;
+      border:1px solid rgba(255,255,255,.08);
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      cursor:pointer;
+    }
+    .nav-cart-btn .cart-count {
+      background:var(--brand);
+      padding:4px 8px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:13px;
+      color:#fff;
+    }
+    .nav-cart-btn .cart-icon {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:28px;height:28px;border-radius:6px;
+      background:transparent;
+      color:var(--text);
+      transform:rotate(180deg); /* reverse icon as requested */
+    }
+
+    /* make sure large z-index sits above mobile menu */
+    nav { z-index: 1200; }
+    
+    
+    .wrap{max-width:1600px;margin:0 auto;padding:16px}
+    .spacer{flex:1}
+    .search input{background:transparent;border:none;outline:none;color:var(--text);width:260px}
+     /* keep basic button styles used by cart/checkout */
+    .btn{cursor:pointer;border:none;border-radius:999px;padding:8px 12px;color:white;font-weight:600}
+    .btn-primary{background:linear-gradient(135deg,var(--brand),#7c3aed)}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--text)}
+    .catbar{display:flex;gap:8px;overflow:auto;padding:10px 2px 2px;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+    @media(max-width:1024px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:768px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))} .search input{width:140px}}
+    @media(max-width:480px){.grid{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;height:100%}
+    .card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0e0f13}
+    .card .body{padding:14px;display:grid;gap:8px}
+    .title{font-weight:600}
+    .muted{color:var(--muted);font-size:13px}
+    .price{font-weight:700}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14)}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+    /* Cart Drawer */
+   .cart-drawer{
+      position:fixed;top:0;right:0;height:100%;width:380px;max-width:92vw;background:var(--card);
+      box-shadow:var(--shadow);transform:translateX(105%);transition:transform .35s ease;z-index:9999;border-left:1px solid rgba(255,255,255,.1)
+    }
+    .cart-drawer.open{transform:translateX(0)}
+    .cart-head{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)}
+    .cart-items{padding:10px 14px;display:grid;gap:10px;max-height:calc(100% - 230px);overflow:auto}
+    .cart-row{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;background:rgba(255,255,255,.02);padding:8px;border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+    .cart-row img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .qty{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.12);padding:4px 8px;border-radius:999px}
+    .qty button{background:transparent;border:none;color:var(--text);font-weight:700;cursor:pointer}
+    .cart-foot{position:absolute;bottom:0;left:0;right:0;padding:16px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:10px;background:linear-gradient(180deg,rgba(19,21,26,.95),rgba(19,21,26,1))}
+    .total{display:flex;align-items:center;justify-content:space-between}
+    .pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+
+    /* Checkout overlay */
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:60}
+    .checkout-card{width:820px;max-width:96vw;background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);color:var(--text)}
+    .checkout-grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+    @media(max-width:920px){.checkout-grid{grid-template-columns:1fr}}
+    .bank{background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+    footer{padding:40px 16px;color:var(--muted);text-align:center}
+    
+    .button {
+      background-color: red;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+    }
+    
+    /* ===== Pagination Styles ===== */
+#pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+  font-family: inherit;
+}
+
+#pagination button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--brand);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  transition: background .2s, transform .2s;
+}
+
+#pagination button:hover:not(:disabled) {
+  background: #6d5efc; /* lighter brand shade */
+  transform: translateY(-2px);
+}
+
+#pagination button:disabled {
+  background: #333;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#pagination span {
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0 6px;
+  user-select: none;
+}
+
+  </style>
+   <!-- Font Awesome (cart/search icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+ 
+  <!-- =================== NAVBAR (keeps your original structure) =================== -->
+  <nav>
+    <div class="hamburger" id="hamburger">☰</div>
+    <div class="logo">MyLogo</div>
+
+    <ul class="nav-links">
+      <li><a href="#">Home</a>
+        <ul class="dropdown">
+          <li><a href="#">Sublink 1</a></li>
+          <li><a href="#">Sublink 2</a></li>
+          <li><a href="#">Sublink 3</a></li>
+          <li><a href="#">Sublink 4</a></li>
+          <li><a href="#">Sublink 5</a></li>
+          <li><a href="#">Sublink 6</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Shop</a>
+        <ul class="dropdown">
+          <li><a href="#">Men</a></li>
+          <li><a href="#">Women</a></li>
+          <li><a href="#">Kids</a></li>
+          <li><a href="#">Shoes</a></li>
+          <li><a href="#">Accessories</a></li>
+          <li><a href="#">Sale</a></li>
+        </ul>
+      </li>
+      <li><a href="#">About</a>
+        <ul class="dropdown">
+          <li><a href="#">Mission</a></li>
+          <li><a href="#">Vision</a></li>
+          <li><a href="#">Team</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Partners</a></li>
+          <li><a href="#">History</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Blog</a>
+        <ul class="dropdown">
+          <li><a href="#">Latest</a></li>
+          <li><a href="#">News</a></li>
+          <li><a href="#">Tips</a></li>
+          <li><a href="#">Guides</a></li>
+          <li><a href="#">Stories</a></li>
+          <li><a href="#">Reviews</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Contact</a>
+        <ul class="dropdown">
+          <li><a href="#">Email</a></li>
+          <li><a href="#">Phone</a></li>
+          <li><a href="#">Map</a></li>
+          <li><a href="#">Support</a></li>
+          <li><a href="#">Feedback</a></li>
+          <li><a href="#">Chat</a></li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="icons" style="gap:14px">
+     <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M21 21L15.8 15.8M18 10.5C18 14.0899 15.0899 17 11.5 17C7.91015 17 5 14.0899 5 10.5C5 6.91015 7.91015 4 11.5 4C15.0899 4 18 6.91015 18 10.5Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <input id="q" type="search" placeholder="Search products…" />
+  </div>
+
+      <!-- Replaced cart icon with working cart button (icon reversed + count beside it) -->
+      <button id="cartBtn" class="nav-cart-btn" aria-haspopup="dialog" aria-controls="cartPanel" title="Open cart">
+        <span class="cart-icon"><i class="fas fa-shopping-cart"></i></span>
+        <span class="cart-count" id="cartCount">0</span>
+        
+      </button>
+    </div>
+  </nav>
+
+  <!-- =================== MOBILE MENU (your original) =================== -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div>
+      <div class="close-btn" id="closeBtn">×</div>
+      <ul>
+        <li>
+          <a href="#" class="toggle">Home <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Sublink 1</a><a href="#">Sublink 2</a><a href="#">Sublink 3</a>
+            <a href="#">Sublink 4</a><a href="#">Sublink 5</a><a href="#">Sublink 6</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">Shop <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Men</a><a href="#">Women</a><a href="#">Kids</a>
+            <a href="#">Shoes</a><a href="#">Accessories</a><a href="#">Sale</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">About <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Mission</a><a href="#">Vision</a><a href="#">Team</a>
+            <a href="#">Careers</a><a href="#">Partners</a><a href="#">History</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">Blog <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Latest</a><a href="#">News</a><a href="#">Tips</a>
+            <a href="#">Guides</a><a href="#">Stories</a><a href="#">Reviews</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">Contact <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Email</a><a href="#">Phone</a><a href="#">Map</a>
+            <a href="#">Support</a><a href="#">Feedback</a><a href="#">Chat</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="mobile-social">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-linkedin"></i></a>
+    </div>
+  </div>
+
+  <!-- =================== CART DRAWER + CHECKOUT (copied & integrated) =================== -->
+  <aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div id="catbar" class="cart-head">
+      <strong id="cartTitle">Your Cart</strong>
+      <button id="closeCart" class="btn btn-ghost">Close</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="total"><span>Subtotal</span> <strong id="subtotal">₦0</strong></div>
+      <div class="row" style="display:flex;gap:10px;align-items:center">
+        <span class="pill">Orders above ₦200,000 → Free shipping</span>
+        <button id="checkoutBtn" class="btn btn-primary" style="flex:1">Checkout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Checkout overlay (bank transfer + WA) -->
+  <div id="checkoutOverlay" class="overlay" aria-hidden="true">
+    <div class="checkout-card" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Complete Payment — Bank Transfer</h3>
+        <button id="closeCheckout" class="btn btn-ghost">Close</button>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- left: buyer form -->
+        <div>
+          <label class="muted">Full name</label><br>
+          <input id="custName" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <div style="flex:1">
+              <label class="muted">Email</label><br>
+              <input id="custEmail" type="email" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+            <div style="width:180px">
+              <label class="muted">WhatsApp phone</label><br>
+              <input id="custPhone" placeholder="+2348012345678" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label class="muted">Order note</label><br>
+            <textarea id="orderNote" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="confirmPaymentBtn" class="btn btn-primary">Payment Done — Save Order</button>
+            <button id="cancelCheckout" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+
+        <!-- right: bank details / order summary -->
+        <div>
+          <div class="bank">
+            <div style="margin-bottom:8px"><strong>Bank Details</strong></div>
+
+            <!-- CONFIG: visible bank details -->
+            <div style="margin-bottom:6px"><div class="muted">Bank</div><div id="bankName" style="font-weight:700">[REPLACE_BANK_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account name</div><div id="accountName" style="font-weight:700">[REPLACE_ACCOUNT_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account number</div><div id="accountNumber" style="font-weight:700">[REPLACE_ACCOUNT_NUMBER]</div></div>
+            <div style="margin-top:8px;color:var(--muted);font-size:13px">Use the order code as payment reference</div>
+
+            <hr style="opacity:.06;margin:10px 0">
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Order code</div>
+              <div id="orderCode" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Amount to pay</div>
+              <div id="amountToPay" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div class="muted" style="margin-top:6px">1) Transfer the exact amount to the bank account above.</div>
+            <div class="muted">2) Send your transfer receipt + order code to our WhatsApp.</div>
+
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <a id="whatsappLink" class="btn btn-primary" href="#" target="_blank" style="flex:1;text-align:center">Send Receipt on WhatsApp</a>
+            </div>
+
+            <p class="muted" style="margin-top:12px;font-size:13px">Orders stay <strong>Pending</strong> until payment is confirmed in admin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+    
+  <main class="wrap" style="padding-block:18px;">
+  <div id="products" class="grid"></div>
+
+  <!-- Pagination -->
+  <div id="pagination" style="display:flex;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap;"></div>
+</main>
+
+  <footer>
+    <div class="wrap">Demo store for learning purposes. Replace sample data with your catalog. © <span id="year"></span></div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="cart-head">
+      <strong id="cartTitle">Your Cart</strong>
+      <button id="closeCart" class="btn btn-ghost">Close</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="total"><span>Subtotal</span> <strong id="subtotal">₦0</strong></div>
+      <div class="row">
+        <span class="pill">Orders above ₦200,000 → Free shipping</span>
+        <button id="checkoutBtn" class="btn btn-primary" style="flex:1">Checkout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Checkout overlay (always shows bank + WA; code/amount filled on open) -->
+  <div id="checkoutOverlay" class="overlay">
+    <div class="checkout-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Complete Payment — Bank Transfer</h3>
+        <button id="closeCheckout" class="btn btn-ghost">Close</button>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- left: form -->
+        <div>
+          <label class="muted">Full name</label><br>
+          <input id="custName" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <div style="flex:1">
+              <label class="muted">Email</label><br>
+              <input id="custEmail" type="email" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+            <div style="width:180px">
+              <label class="muted">WhatsApp phone</label><br>
+              <input id="custPhone" placeholder="+2348012345678" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label class="muted">Order note</label><br>
+            <textarea id="orderNote" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="confirmPaymentBtn" class="btn btn-primary">Payment Done — Save Order</button>
+            <button id="cancelCheckout" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+
+        <!-- right: bank details / always visible -->
+        <div>
+          <div class="bank">
+            <div style="margin-bottom:8px"><strong>Bank Details</strong></div>
+
+            <!-- CONFIG: replace with your real details -->
+            <div style="margin-bottom:6px"><div class="muted">Bank</div><div id="bankName" style="font-weight:700">[REPLACE_BANK_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account name</div><div id="accountName" style="font-weight:700">[REPLACE_ACCOUNT_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account number</div><div id="accountNumber" style="font-weight:700">[REPLACE_ACCOUNT_NUMBER]</div></div>
+            <div style="margin-top:8px;color:var(--muted);font-size:13px">Use the order code as payment reference</div>
+
+            <hr style="opacity:.06;margin:10px 0">
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Order code</div>
+              <div id="orderCode" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Amount to pay</div>
+              <div id="amountToPay" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div class="muted" style="margin-top:6px">1) Transfer the exact amount to the bank account above.</div>
+            <div class="muted">2) Send your transfer receipt + order code to our WhatsApp.</div>
+
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <a id="whatsappLink" class="btn btn-primary" href="#" target="_blank" style="flex:1;text-align:center">Send Receipt on WhatsApp</a>
+            </div>
+
+            <p class="muted" style="margin-top:12px;font-size:13px">Orders stay <strong>Pending</strong> until payment is confirmed in admin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK (compat only) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+
+  <script src="script.js"></script>
+  
+  
+</body>
+</html>

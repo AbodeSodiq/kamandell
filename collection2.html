@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MyStore — Dark UI (Bank Transfer)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0c0f; --card:#13151a; --text:#e6e9ef; --muted:#a5adbb; --brand:#4f46e5; --danger:#ef4444;
+      --shadow:0 10px 30px rgba(0,0,0,.35); --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:radial-gradient(1200px 800px at 80% -100px,#1a1f2e,var(--bg)); color:var(--text)}
+     nav {
+      width: 100%;
+      background: #111;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      position: relative;
+      z-index: 1000;
+    }
+
+    .logo { font-size: 22px; font-weight: bold; color: #fff; }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+      list-style: none;
+    }
+
+    .nav-links li { position: relative; }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #fff;
+      padding: 8px;
+      transition: color 0.3s;
+    }
+    .nav-links a:hover { color: #00bcd4; }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #222;
+      list-style: none;
+      min-width: 180px;
+      padding: 10px 0;
+      border-radius: 6px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+    .dropdown li a { display: block; padding: 10px 20px; color: #fff; }
+    .nav-links li:hover .dropdown { display: block; opacity: 1; transform: translateY(0); }
+
+    .icons {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icons i { cursor: pointer; font-size: 20px; transition: color 0.3s; color:#fff; }
+    .icons i:hover { color: #00bcd4; }
+
+    .hamburger { display: none; font-size: 26px; cursor: pointer; color:#fff; }
+
+    /* Mobile menu */
+    .mobile-menu {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 280px;
+      height: 100vh;
+      background: #111;
+      color: #fff;
+      padding: 20px;
+      transition: left 0.3s ease;
+      z-index: 2000;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .mobile-menu.active { left: 0; }
+    .close-btn { font-size: 26px; cursor: pointer; text-align: right; margin-bottom: 20px; color:#fff; }
+    .mobile-menu ul { list-style: none; padding: 0; }
+    .mobile-menu li { border-bottom: 1px solid #222; }
+    .mobile-menu a.toggle {
+      display: flex; align-items: center; justify-content: space-between; padding: 12px; text-decoration: none; color: #fff; cursor: pointer;
+    }
+    .mobile-menu a.toggle:hover { background: #00bcd4; color: #111; }
+    .arrow { transition: transform 0.3s; }
+    .mobile-menu li.active .arrow { transform: rotate(90deg); }
+    .mobile-submenu { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #222; }
+    .mobile-submenu a { display: block; padding: 10px 28px; font-size: 14px; color: #fff; text-decoration: none; }
+    .mobile-submenu a:hover { background: #00bcd4; color: #111; }
+    .mobile-menu li.active .mobile-submenu { max-height: 500px; }
+    .mobile-social { display: flex; justify-content: center; gap: 20px; margin: 30px 0; }
+    .mobile-social a svg { width: 26px; height: 26px; fill: #fff; transition: fill 0.3s; }
+    .mobile-social a:hover svg { fill: #00bcd4; }
+
+    @media (max-width: 900px) {
+      .nav-links { display: none; } /* hide only the links */
+      .hamburger { display: block; }
+      nav .logo { position: absolute; left: 50%; transform: translateX(-50%); }
+    }
+
+/* Small helper for navbar cart button */
+    .nav-cart-btn {
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:transparent;
+      border:1px solid rgba(255,255,255,.08);
+      padding:6px 10px;
+      border-radius:999px;
+      color:#fff;
+      cursor:pointer;
+    }
+    .nav-cart-btn .cart-count {
+      background:var(--brand);
+      padding:4px 8px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:13px;
+      color:#fff;
+    }
+    .nav-cart-btn .cart-icon {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:28px;height:28px;border-radius:6px;
+      background:transparent;
+      color:var(--text);
+      transform:rotate(180deg); /* reverse icon as requested */
+    }
+
+    /* make sure large z-index sits above mobile menu */
+    nav { z-index: 1200; }
+    
+    
+    .wrap{max-width:1600px;margin:0 auto;padding:16px}
+    .spacer{flex:1}
+    .search input{background:transparent;border:none;outline:none;color:var(--text);width:260px}
+     /* keep basic button styles used by cart/checkout */
+    .btn{cursor:pointer;border:none;border-radius:999px;padding:8px 12px;color:white;font-weight:600}
+    .btn-primary{background:linear-gradient(135deg,var(--brand),#7c3aed)}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,.12);color:var(--text)}
+    .catbar{display:flex;gap:8px;overflow:auto;padding:10px 2px 2px;margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+    @media(max-width:1024px){.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    @media(max-width:768px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))} .search input{width:140px}}
+    @media(max-width:480px){.grid{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;height:100%}
+    .card img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#0e0f13}
+    .card .body{padding:14px;display:grid;gap:8px}
+    .title{font-weight:600}
+    .muted{color:var(--muted);font-size:13px}
+    .price{font-weight:700}
+    .badge{font-size:12px;padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14)}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+
+    /* Cart Drawer */
+   .cart-drawer{
+      position:fixed;top:0;right:0;height:100%;width:380px;max-width:92vw;background:var(--card);
+      box-shadow:var(--shadow);transform:translateX(105%);transition:transform .35s ease;z-index:9999;border-left:1px solid rgba(255,255,255,.1)
+    }
+    .cart-drawer.open{transform:translateX(0)}
+    .cart-head{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08)}
+    .cart-items{padding:10px 14px;display:grid;gap:10px;max-height:calc(100% - 230px);overflow:auto}
+    .cart-row{display:grid;grid-template-columns:56px 1fr auto;gap:10px;align-items:center;background:rgba(255,255,255,.02);padding:8px;border-radius:12px;border:1px solid rgba(255,255,255,.06)}
+    .cart-row img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+    .qty{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(255,255,255,.12);padding:4px 8px;border-radius:999px}
+    .qty button{background:transparent;border:none;color:var(--text);font-weight:700;cursor:pointer}
+    .cart-foot{position:absolute;bottom:0;left:0;right:0;padding:16px;border-top:1px solid rgba(255,255,255,.08);display:grid;gap:10px;background:linear-gradient(180deg,rgba(19,21,26,.95),rgba(19,21,26,1))}
+    .total{display:flex;align-items:center;justify-content:space-between}
+    .pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);padding:6px 10px;border-radius:999px}
+
+    /* Checkout overlay */
+    .overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:60}
+    .checkout-card{width:820px;max-width:96vw;background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--shadow);color:var(--text)}
+    .checkout-grid{display:grid;grid-template-columns:1fr 340px;gap:16px}
+    @media(max-width:920px){.checkout-grid{grid-template-columns:1fr}}
+    .bank{background:rgba(255,255,255,.02);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,.04)}
+    footer{padding:40px 16px;color:var(--muted);text-align:center}
+    
+    .button {
+      background-color: red;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+    }
+    
+    /* ===== Pagination Styles ===== */
+#pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 30px 0;
+  flex-wrap: wrap;
+  font-family: inherit;
+}
+
+#pagination button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--brand);
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  transition: background .2s, transform .2s;
+}
+
+#pagination button:hover:not(:disabled) {
+  background: #6d5efc; /* lighter brand shade */
+  transform: translateY(-2px);
+}
+
+#pagination button:disabled {
+  background: #333;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+#pagination span {
+  color: var(--muted);
+  font-weight: 700;
+  padding: 0 6px;
+  user-select: none;
+}
+
+  </style>
+   <!-- Font Awesome (cart/search icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+ 
+  <!-- =================== NAVBAR (keeps your original structure) =================== -->
+  <nav>
+    <div class="hamburger" id="hamburger">☰</div>
+    <div class="logo">MyLogo</div>
+
+    <ul class="nav-links">
+      <li><a href="#">Home</a>
+        <ul class="dropdown">
+          <li><a href="#">Sublink 1</a></li>
+          <li><a href="#">Sublink 2</a></li>
+          <li><a href="#">Sublink 3</a></li>
+          <li><a href="#">Sublink 4</a></li>
+          <li><a href="#">Sublink 5</a></li>
+          <li><a href="#">Sublink 6</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Shop</a>
+        <ul class="dropdown">
+          <li><a href="#">Men</a></li>
+          <li><a href="#">Women</a></li>
+          <li><a href="#">Kids</a></li>
+          <li><a href="#">Shoes</a></li>
+          <li><a href="#">Accessories</a></li>
+          <li><a href="#">Sale</a></li>
+        </ul>
+      </li>
+      <li><a href="#">About</a>
+        <ul class="dropdown">
+          <li><a href="#">Mission</a></li>
+          <li><a href="#">Vision</a></li>
+          <li><a href="#">Team</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Partners</a></li>
+          <li><a href="#">History</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Blog</a>
+        <ul class="dropdown">
+          <li><a href="#">Latest</a></li>
+          <li><a href="#">News</a></li>
+          <li><a href="#">Tips</a></li>
+          <li><a href="#">Guides</a></li>
+          <li><a href="#">Stories</a></li>
+          <li><a href="#">Reviews</a></li>
+        </ul>
+      </li>
+      <li><a href="#">Contact</a>
+        <ul class="dropdown">
+          <li><a href="#">Email</a></li>
+          <li><a href="#">Phone</a></li>
+          <li><a href="#">Map</a></li>
+          <li><a href="#">Support</a></li>
+          <li><a href="#">Feedback</a></li>
+          <li><a href="#">Chat</a></li>
+        </ul>
+      </li>
+    </ul>
+
+    <div class="icons" style="gap:14px">
+     <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M21 21L15.8 15.8M18 10.5C18 14.0899 15.0899 17 11.5 17C7.91015 17 5 14.0899 5 10.5C5 6.91015 7.91015 4 11.5 4C15.0899 4 18 6.91015 18 10.5Z"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <input id="q" type="search" placeholder="Search products…" />
+  </div>
+
+      <!-- Replaced cart icon with working cart button (icon reversed + count beside it) -->
+      <button id="cartBtn" class="nav-cart-btn" aria-haspopup="dialog" aria-controls="cartPanel" title="Open cart">
+        <span class="cart-icon"><i class="fas fa-shopping-cart"></i></span>
+        <span class="cart-count" id="cartCount">0</span>
+        
+      </button>
+    </div>
+  </nav>
+
+  <!-- =================== MOBILE MENU (your original) =================== -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div>
+      <div class="close-btn" id="closeBtn">×</div>
+      <ul>
+        <li>
+          <a href="#" class="toggle">Home <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Sublink 1</a><a href="#">Sublink 2</a><a href="#">Sublink 3</a>
+            <a href="#">Sublink 4</a><a href="#">Sublink 5</a><a href="#">Sublink 6</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">Shop <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Men</a><a href="#">Women</a><a href="#">Kids</a>
+            <a href="#">Shoes</a><a href="#">Accessories</a><a href="#">Sale</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">About <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Mission</a><a href="#">Vision</a><a href="#">Team</a>
+            <a href="#">Careers</a><a href="#">Partners</a><a href="#">History</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">Blog <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Latest</a><a href="#">News</a><a href="#">Tips</a>
+            <a href="#">Guides</a><a href="#">Stories</a><a href="#">Reviews</a>
+          </div>
+        </li>
+        <li>
+          <a href="#" class="toggle">Contact <span class="arrow">›</span></a>
+          <div class="mobile-submenu">
+            <a href="#">Email</a><a href="#">Phone</a><a href="#">Map</a>
+            <a href="#">Support</a><a href="#">Feedback</a><a href="#">Chat</a>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="mobile-social">
+      <a href="#"><i class="fab fa-facebook"></i></a>
+      <a href="#"><i class="fab fa-twitter"></i></a>
+      <a href="#"><i class="fab fa-instagram"></i></a>
+      <a href="#"><i class="fab fa-linkedin"></i></a>
+    </div>
+  </div>
+
+  <!-- =================== CART DRAWER + CHECKOUT (copied & integrated) =================== -->
+  <aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div id="catbar" class="cart-head">
+      <strong id="cartTitle">Your Cart</strong>
+      <button id="closeCart" class="btn btn-ghost">Close</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="total"><span>Subtotal</span> <strong id="subtotal">₦0</strong></div>
+      <div class="row" style="display:flex;gap:10px;align-items:center">
+        <span class="pill">Orders above ₦200,000 → Free shipping</span>
+        <button id="checkoutBtn" class="btn btn-primary" style="flex:1">Checkout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Checkout overlay (bank transfer + WA) -->
+  <div id="checkoutOverlay" class="overlay" aria-hidden="true">
+    <div class="checkout-card" role="dialog" aria-modal="true">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Complete Payment — Bank Transfer</h3>
+        <button id="closeCheckout" class="btn btn-ghost">Close</button>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- left: buyer form -->
+        <div>
+          <label class="muted">Full name</label><br>
+          <input id="custName" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <div style="flex:1">
+              <label class="muted">Email</label><br>
+              <input id="custEmail" type="email" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+            <div style="width:180px">
+              <label class="muted">WhatsApp phone</label><br>
+              <input id="custPhone" placeholder="+2348012345678" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label class="muted">Order note</label><br>
+            <textarea id="orderNote" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="confirmPaymentBtn" class="btn btn-primary">Payment Done — Save Order</button>
+            <button id="cancelCheckout" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+
+        <!-- right: bank details / order summary -->
+        <div>
+          <div class="bank">
+            <div style="margin-bottom:8px"><strong>Bank Details</strong></div>
+
+            <!-- CONFIG: visible bank details -->
+            <div style="margin-bottom:6px"><div class="muted">Bank</div><div id="bankName" style="font-weight:700">[REPLACE_BANK_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account name</div><div id="accountName" style="font-weight:700">[REPLACE_ACCOUNT_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account number</div><div id="accountNumber" style="font-weight:700">[REPLACE_ACCOUNT_NUMBER]</div></div>
+            <div style="margin-top:8px;color:var(--muted);font-size:13px">Use the order code as payment reference</div>
+
+            <hr style="opacity:.06;margin:10px 0">
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Order code</div>
+              <div id="orderCode" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Amount to pay</div>
+              <div id="amountToPay" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div class="muted" style="margin-top:6px">1) Transfer the exact amount to the bank account above.</div>
+            <div class="muted">2) Send your transfer receipt + order code to our WhatsApp.</div>
+
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <a id="whatsappLink" class="btn btn-primary" href="#" target="_blank" style="flex:1;text-align:center">Send Receipt on WhatsApp</a>
+            </div>
+
+            <p class="muted" style="margin-top:12px;font-size:13px">Orders stay <strong>Pending</strong> until payment is confirmed in admin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+ 
+    
+  <main class="wrap" style="padding-block:18px;">
+  <div id="products" class="grid"></div>
+
+  <!-- Pagination -->
+  <div id="pagination" style="display:flex;justify-content:center;gap:8px;margin-top:20px;flex-wrap:wrap;"></div>
+</main>
+
+  <footer>
+    <div class="wrap">Demo store for learning purposes. Replace sample data with your catalog. © <span id="year"></span></div>
+  </footer>
+
+  <!-- Cart Drawer -->
+  <aside id="cartPanel" class="cart-drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+    <div class="cart-head">
+      <strong id="cartTitle">Your Cart</strong>
+      <button id="closeCart" class="btn btn-ghost">Close</button>
+    </div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-foot">
+      <div class="total"><span>Subtotal</span> <strong id="subtotal">₦0</strong></div>
+      <div class="row">
+        <span class="pill">Orders above ₦200,000 → Free shipping</span>
+        <button id="checkoutBtn" class="btn btn-primary" style="flex:1">Checkout</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Checkout overlay (always shows bank + WA; code/amount filled on open) -->
+  <div id="checkoutOverlay" class="overlay">
+    <div class="checkout-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Complete Payment — Bank Transfer</h3>
+        <button id="closeCheckout" class="btn btn-ghost">Close</button>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- left: form -->
+        <div>
+          <label class="muted">Full name</label><br>
+          <input id="custName" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+
+          <div style="display:flex;gap:12px;margin-top:12px">
+            <div style="flex:1">
+              <label class="muted">Email</label><br>
+              <input id="custEmail" type="email" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+            <div style="width:180px">
+              <label class="muted">WhatsApp phone</label><br>
+              <input id="custPhone" placeholder="+2348012345678" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"/>
+            </div>
+          </div>
+
+          <div style="margin-top:12px">
+            <label class="muted">Order note</label><br>
+            <textarea id="orderNote" rows="3" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,.06);background:transparent;color:var(--text);margin-top:6px"></textarea>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:12px">
+            <button id="confirmPaymentBtn" class="btn btn-primary">Payment Done — Save Order</button>
+            <button id="cancelCheckout" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+
+        <!-- right: bank details / always visible -->
+        <div>
+          <div class="bank">
+            <div style="margin-bottom:8px"><strong>Bank Details</strong></div>
+
+            <!-- CONFIG: replace with your real details -->
+            <div style="margin-bottom:6px"><div class="muted">Bank</div><div id="bankName" style="font-weight:700">[REPLACE_BANK_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account name</div><div id="accountName" style="font-weight:700">[REPLACE_ACCOUNT_NAME]</div></div>
+            <div style="margin-bottom:6px"><div class="muted">Account number</div><div id="accountNumber" style="font-weight:700">[REPLACE_ACCOUNT_NUMBER]</div></div>
+            <div style="margin-top:8px;color:var(--muted);font-size:13px">Use the order code as payment reference</div>
+
+            <hr style="opacity:.06;margin:10px 0">
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Order code</div>
+              <div id="orderCode" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div style="margin-bottom:8px">
+              <div class="muted">Amount to pay</div>
+              <div id="amountToPay" style="font-weight:700;font-size:18px;margin-top:6px"></div>
+            </div>
+
+            <div class="muted" style="margin-top:6px">1) Transfer the exact amount to the bank account above.</div>
+            <div class="muted">2) Send your transfer receipt + order code to our WhatsApp.</div>
+
+            <div style="margin-top:10px;display:flex;gap:8px">
+              <a id="whatsappLink" class="btn btn-primary" href="#" target="_blank" style="flex:1;text-align:center">Send Receipt on WhatsApp</a>
+            </div>
+
+            <p class="muted" style="margin-top:12px;font-size:13px">Orders stay <strong>Pending</strong> until payment is confirmed in admin.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDK (compat only) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+
+  <script>
+   // ========== Mobile menu controls ==========
+(function () {
+  const hamburger = document.getElementById("hamburger");
+  const closeBtn = document.getElementById("closeBtn");
+  const mobileMenu = document.getElementById("mobileMenu");
+  const toggles = document.querySelectorAll(".mobile-menu .toggle");
+
+  if (hamburger && closeBtn && mobileMenu) {
+    // open mobile menu
+    hamburger.addEventListener("click", () => {
+      mobileMenu.classList.add("active");
+    });
+
+    // close mobile menu
+    closeBtn.addEventListener("click", () => {
+      mobileMenu.classList.remove("active");
+    });
+  }
+
+  if (toggles.length > 0) {
+    toggles.forEach(toggle => {
+      toggle.addEventListener("click", e => {
+        e.preventDefault();
+        let parent = toggle.parentElement;
+
+        // close other open dropdowns
+        document.querySelectorAll(".mobile-menu li").forEach(li => {
+          if (li !== parent) li.classList.remove("active");
+        });
+
+        // toggle clicked one
+        parent.classList.toggle("active");
+      });
+    });
+  }
+})();
+
+     
+    // === CONFIG: Firebase + Contact + Bank ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyD7IIHG7txvgUwgthDOf3CtGLVdbmLk_X0",
+      authDomain: "kamandell.firebaseapp.com",
+      projectId: "kamandell-8bc28",
+      // optional: storageBucket, messagingSenderId, appId
+    };
+    // WhatsApp number in international format WITHOUT plus, e.g. "2348012345678"
+    const SELLER_WHATSAPP = "YOUR_WHATSAPP_NUMBER";
+
+    const BANK_INFO = {
+      bank: "REPLACE_BANK_NAME",
+      accountName: "REPLACE_ACCOUNT_NAME",
+      accountNumber: "REPLACE_ACCOUNT_NUMBER"
+    };
+    // === END CONFIG ===
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+
+    // Track the last created order so "Payment Done" can update it
+    let lastOrderId = null;
+    let lastOrderCode = null;
+
+
+    // Shortcuts
+    const $ = s=>document.querySelector(s);
+    const fmt = n => new Intl.NumberFormat('en-NG',{style:'currency',currency:'NGN',maximumFractionDigits:0}).format(n);
+
+    // Elements
+    const productsEl = $('#products');
+    const catbar = $('#catbar');
+    const cartBtn = $('#cartBtn');
+    const cartPanel = $('#cartPanel');
+    const closeCart = $('#closeCart');
+    const cartItemsEl = $('#cartItems');
+    const subtotalEl = $('#subtotal');
+    const cartCountEl = $('#cartCount');
+    const searchInput = $('#q');
+    const yearEl = $('#year');
+
+    const checkoutOverlay = $('#checkoutOverlay');
+    const closeCheckout = $('#closeCheckout');
+    const confirmPaymentBtn = $('#confirmPaymentBtn');
+    const cancelCheckout = $('#cancelCheckout');
+    const custName = $('#custName');
+    const custEmail = $('#custEmail');
+    const custPhone = $('#custPhone');
+    const orderNote = $('#orderNote');
+    const orderCodeEl = $('#orderCode');
+    const amountToPay = $('#amountToPay');
+    const whatsappLink = $('#whatsappLink');
+
+    // Insert visible bank info
+    $('#bankName').textContent = BANK_INFO.bank;
+    $('#accountName').textContent = BANK_INFO.accountName;
+    $('#accountNumber').textContent = BANK_INFO.accountNumber;
+
+    // Demo fallback products
+    const DEMO_PRODUCTS = [
+      { id:'p1', name:'Samba OG', brand:'adidas', price:200000, image:'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=1200&auto=format&fit=crop', tags:['shoes','men','lifestyle'], badge:'7% off' },
+      { id:'p2', name:'Max Cushioning', brand:'Skechers', price:143000, image:'https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?q=80&w=1200&auto=format&fit=crop', tags:['shoes','women','running'], badge:'36% off' },
+      { id:'p3', name:'Arsenal Jersey', brand:'adidas', price:179000, image:'https://images.unsplash.com/photo-1526676037777-05a232554f77?q=80&w=1200&auto=format&fit=crop', tags:['jersey','men','football'] },
+      { id:'p4', name:'Havaianas Top', brand:'Havaianas', price:8000, image:'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=1200&auto=format&fit=crop', tags:['slides','unisex','sale'], badge:'30% off' },
+      { id:'p5', name:'Gazelle', brand:'adidas', price:179000, image:'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1200&auto=format&fit=crop', tags:['shoes','men','lifestyle'] }
+    ];
+
+    let PRODUCTS = [];
+    let state = { query:'', tag:'all', cart: JSON.parse(localStorage.getItem('cart')||'[]') };
+    let currentOrderCode = null; // generated on checkout open
+    let currentOrderTotal = 0;
+
+    function saveCart(){ localStorage.setItem('cart', JSON.stringify(state.cart)); }
+    function setCartCount(){ cartCountEl.textContent = state.cart.reduce((s,i)=>s+i.qty,0); }
+
+    // How many products per page
+const PRODUCTS_PER_PAGE = 20;
+let currentPage = 1;
+
+// Read ?tag= query from URL and set state.tag
+const params = new URLSearchParams(window.location.search);
+if (params.has("tag")) {
+  state.tag = params.get("tag");
+}
+
+
+// Load products (from Firestore or demo)
+async function loadProducts() {
+  try {
+    let queryRef = db.collection('products');
+
+    // If a tag is selected in URL (?tag=shoes), filter directly in Firestore
+    if (state.tag && state.tag !== 'all') {
+      queryRef = queryRef.where('tags', 'array-contains', state.tag);
+    }
+
+    const snap = await queryRef.get();
+
+    if (!snap.empty) {
+      PRODUCTS = snap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          name: data.name || 'No name',
+          brand: data.brand || '',
+          price: data.price || 0,
+          image: data.image || '',
+          tags: Array.isArray(data.tags) ? data.tags : [],
+          badge: data.badge || ''
+        };
+      });
+
+      // 🔎 Local search (name, brand, OR tags)
+      if (state.query) {
+        const q = state.query.toLowerCase();
+        PRODUCTS = PRODUCTS.filter(p =>
+          p.name.toLowerCase().includes(q) ||
+          (p.brand || '').toLowerCase().includes(q) ||
+          (p.tags || []).some(tag => tag.toLowerCase().includes(q))
+        );
+      }
+    } else {
+      PRODUCTS = DEMO_PRODUCTS;
+    }
+  } catch (err) {
+    console.warn('Firestore unavailable, using demo products', err);
+    PRODUCTS = DEMO_PRODUCTS;
+  }
+
+  currentPage = 1; // reset page whenever new products are loaded
+  initCats();
+  renderProducts();
+  renderCart();
+}
+
+// Render products with pagination
+function renderProducts(page = currentPage) {
+  const q = state.query.toLowerCase();
+  const tag = state.tag;
+
+  // Filtered items
+  const items = PRODUCTS.filter(p =>
+    (tag === 'all' || (p.tags || []).includes(tag)) &&
+    (!q ||
+      p.name.toLowerCase().includes(q) ||
+      (p.brand || '').toLowerCase().includes(q) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(q))
+    )
+  );
+
+  // Slice for pagination
+  const start = (page - 1) * PRODUCTS_PER_PAGE;
+  const end = start + PRODUCTS_PER_PAGE;
+  const pagedItems = items.slice(start, end);
+
+  // Render product cards
+  productsEl.innerHTML = pagedItems.map(p => `
+    <article class="card" aria-label="${p.name}">
+      <img src="${p.image}" alt="${p.name}">
+      <div class="body">
+        <div class="row">
+          <span class="badge">${p.brand}</span>
+          ${p.badge ? `<span class="badge" style="margin-left:8px">${p.badge}</span>` : ''}
+        </div>
+        <div class="title">${p.name}</div>
+        <div class="muted">
+          ${(p.tags || []).map(t => `<a href="?tag=${t}" onclick="selectTag('${t}');return false;" class="badge">${t}</a>`).join(' ')}
+        </div>
+        <div class="row">
+          <span class="price">${fmt(p.price)}</span>
+          <button class="btn btn-primary" onclick="addToCart('${p.id}')">Add to cart</button>
+        </div>
+      </div>
+    </article>
+  `).join('');
+
+  renderPagination(items.length, page);
+}
+
+// Render pagination buttons
+function renderPagination(totalItems, page) {
+  const totalPages = Math.ceil(totalItems / PRODUCTS_PER_PAGE);
+  const paginationEl = document.getElementById("pagination");
+  if (!paginationEl) return;
+
+  paginationEl.innerHTML = "";
+  if (totalPages <= 1) return; // no pagination needed
+
+  // Prev button
+  const prev = document.createElement("button");
+  prev.textContent = "Prev";
+  prev.disabled = page === 1;
+  prev.onclick = () => { currentPage--; renderProducts(); };
+  paginationEl.appendChild(prev);
+
+  // Numbered buttons (show max 5 at once with dots)
+  const maxVisible = 5;
+  let start = Math.max(1, page - Math.floor(maxVisible / 2));
+  let end = start + maxVisible - 1;
+  if (end > totalPages) {
+    end = totalPages;
+    start = Math.max(1, end - maxVisible + 1);
+  }
+
+  if (start > 1) {
+    addPageButton(1, page, paginationEl);
+    if (start > 2) {
+      const dots = document.createElement("span");
+      dots.textContent = "...";
+      paginationEl.appendChild(dots);
+    }
+  }
+
+  for (let i = start; i <= end; i++) {
+    addPageButton(i, page, paginationEl);
+  }
+
+  if (end < totalPages) {
+    if (end < totalPages - 1) {
+      const dots = document.createElement("span");
+      dots.textContent = "...";
+      paginationEl.appendChild(dots);
+    }
+    addPageButton(totalPages, page, paginationEl);
+  }
+
+  // Next button
+  const next = document.createElement("button");
+  next.textContent = "Next";
+  next.disabled = page === totalPages;
+  next.onclick = () => { currentPage++; renderProducts(); };
+  paginationEl.appendChild(next);
+}
+
+// Helper for page buttons
+function addPageButton(num, current, container) {
+  const btn = document.createElement("button");
+  btn.textContent = num;
+  btn.disabled = num === current;
+  btn.onclick = () => { currentPage = num; renderProducts(); };
+  container.appendChild(btn);
+}
+
+
+function selectTag(t){
+  state.tag = t;
+  initCats(); 
+  renderProducts();
+  // Update the URL so it can be shared/bookmarked
+  const url = new URL(window.location);
+  url.searchParams.set('tag', t);
+  window.history.replaceState({}, '', url);
+}
+
+
+
+    function renderCart(){
+      const rows = state.cart.map(ci=>{
+        const p = PRODUCTS.find(x=>x.id===ci.id) || DEMO_PRODUCTS.find(x=>x.id===ci.id) || {};
+        const line = (p.price||0) * ci.qty;
+        return `
+          <div class="cart-row">
+            <img src="${p.image||''}" alt="${p.name||'Product'}"/>
+            <div>
+              <div style="font-weight:600">${p.name||'Product'}</div>
+              <div class="muted">${fmt(p.price||0)} × ${ci.qty}</div>
+              <div class="qty">
+                <button onclick="setQty('${ci.id}',-1)">−</button>
+                <span>${ci.qty}</span>
+                <button onclick="setQty('${ci.id}',+1)">+</button>
+                <button onclick="removeFromCart('${ci.id}')" style="margin-left:8px;color:var(--danger)">Remove</button>
+              </div>
+            </div>
+            <strong>${fmt(line)}</strong>
+          </div>`;
+      }).join('');
+      cartItemsEl.innerHTML = rows || '<p class="muted">Your cart is empty</p>';
+      const total = state.cart.reduce((s,ci)=>{ const p = PRODUCTS.find(x=>x.id===ci.id) || DEMO_PRODUCTS.find(x=>x.id===ci.id) || {}; return s + ((p.price||0)*ci.qty); },0);
+      subtotalEl.textContent = fmt(total);
+      return total;
+    }
+
+    // Cart ops
+    function addToCart(id){
+      const item = state.cart.find(i=>i.id===id);
+      if(item) item.qty++; else state.cart.push({id, qty:1});
+      saveCart(); setCartCount(); renderCart(); 
+    }
+    function setQty(id,delta){
+      const it = state.cart.find(i=>i.id===id); if(!it) return;
+      it.qty = Math.max(1, it.qty + delta); saveCart(); setCartCount(); renderCart();
+    }
+    function removeFromCart(id){ state.cart = state.cart.filter(i=>i.id!==id); saveCart(); setCartCount(); renderCart(); }
+
+    // Categories
+    function initCats(){
+      const tags = new Set(['all']);
+      PRODUCTS.forEach(p=> (p.tags||[]).forEach(t=>tags.add(t)));
+     
+    }
+    function selectTag(t){ state.tag = t; initCats(); renderProducts(); }
+
+    // UI events
+    cartBtn.addEventListener('click', ()=> cartPanel.classList.add('open'));
+    closeCart.addEventListener('click', ()=> cartPanel.classList.remove('open'));
+    document.getElementById('q').addEventListener('input', (e) => {
+  state.query = e.target.value.trim();
+  loadProducts();
+});
+
+
+    // Helpers
+    function generateOrderCode(){
+      const a = Date.now().toString(36).slice(-6).toUpperCase();
+      const b = Math.random().toString(36).slice(2,6).toUpperCase();
+      return `ORD-${a}-${b}`;
+    }
+
+    // Open checkout: prefill buyer, compute total, generate code, set WA link
+    $('#checkoutBtn').addEventListener('click', ()=>{
+      if(state.cart.length===0){ alert('Your cart is empty'); return; }
+      // Prefill
+      const last = JSON.parse(localStorage.getItem('lastBuyer')||'{}');
+      if(last.name) custName.value = last.name;
+      if(last.email) custEmail.value = last.email;
+      if(last.phone) custPhone.value = last.phone;
+      orderNote.value = '';
+
+      // Compute + code + WA
+      currentOrderTotal = renderCart();
+      currentOrderCode = generateOrderCode();
+      orderCodeEl.textContent = currentOrderCode;
+      amountToPay.textContent = fmt(currentOrderTotal);
+
+      const message = encodeURIComponent(
+        `Hello ${BANK_INFO.accountName}, I placed an order.\n`+
+        `Code: ${currentOrderCode}\nTotal: ${fmt(currentOrderTotal)}\n`+
+        `I will send the transfer receipt shortly.`
+      );
+      whatsappLink.href = `https://wa.me/${SELLER_WHATSAPP}?text=${message}`;
+
+      // Show overlay
+      checkoutOverlay.style.display = 'flex';
+    });
+
+    closeCheckout.addEventListener('click', ()=> checkoutOverlay.style.display='none');
+    cancelCheckout.addEventListener('click', ()=> checkoutOverlay.style.display='none');
+
+   // Save order (pending) when buyer clicks "Payment Done"
+confirmPaymentBtn.addEventListener('click', async ()=>{
+  try {
+    // basic validation
+    const name = custName.value.trim();
+    const email = custEmail.value.trim();
+    const phone = custPhone.value.trim();
+    if(!name || !email || !phone){
+      alert('Please fill name, email and WhatsApp phone.');
+      return;
+    }
+
+    // check firebase/db
+    if(!window.firebase || !db){
+      console.error('Firebase not initialized or db missing', window.firebase, db);
+      alert('Firebase is not initialized. Check your firebaseConfig in the store file.');
+      return;
+    }
+
+    // save buyer for convenience
+    localStorage.setItem('lastBuyer', JSON.stringify({name,email,phone}));
+
+    // ensure cart is not empty
+    if(!Array.isArray(state.cart) || state.cart.length === 0){
+      alert('Your cart is empty.');
+      return;
+    }
+
+    // ensure we have a code and total (fallbacks)
+    currentOrderTotal = currentOrderTotal || renderCart();
+    currentOrderCode = currentOrderCode || generateOrderCode();
+
+    // build items array from cart (lookup product details when possible)
+    const items = state.cart.map(ci => {
+      // ci expected shape: { id: 'p1', qty: 2 } — handle other shapes too
+      const prod = (PRODUCTS || []).find(p => p.id === ci.id) || (DEMO_PRODUCTS || []).find(p => p.id === ci.id) || {};
+      return {
+        id: ci.id || prod.id || null,
+        name: prod.name || ci.name || 'Product',
+        price: prod.price || ci.price || 0,
+        quantity: (ci.qty !== undefined ? ci.qty : (ci.quantity !== undefined ? ci.quantity : 1))
+      };
+    });
+
+    const payload = {
+      code: currentOrderCode,
+      buyer: { name, email, phone },
+      items,                                     // <-- items list for admin
+      amount: currentOrderTotal,
+      currency: 'NGN',
+      note: (orderNote.value||'').trim() || "—",
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    console.log('Saving order payload:', payload);
+
+    const docRef = await db.collection('orders').add(payload);
+    console.log('Order saved id', docRef.id);
+
+    // optional: remember last order id/code for further updates
+    lastOrderId = docRef.id;
+    lastOrderCode = currentOrderCode;
+
+    alert(`✅ Order saved!\nOrder Code: ${currentOrderCode}\nRef: ${docRef.id}`);
+
+    // Clear cart and close overlays
+    state.cart = []; saveCart(); setCartCount(); renderCart();
+    cartPanel.classList.remove('open');
+    checkoutOverlay.style.display='none';
+
+  } catch(err) {
+    // show the real error to help debugging
+    console.error('Failed to save order', err);
+    alert('Failed to save order. Error: ' + (err && err.message ? err.message : err));
+  }
+});
+
+
+    // Init
+    yearEl.textContent = new Date().getFullYear();
+    setCartCount();
+    loadProducts();
+
+    // expose for inline handlers
+    window.addToCart = addToCart;
+    window.setQty = setQty;
+    window.removeFromCart = removeFromCart;
+    window.selectTag = selectTag;
+
+    //generate order code
+    createOrderBtn.addEventListener('click', async ()=>{
+  const name = custName.value.trim();
+  const email = custEmail.value.trim();
+  const phone = custPhone.value.trim();
+  const note = orderNote.value.trim();
+  if(!name || !email || !phone){ alert('Please fill name, email and phone.'); return; }
+
+  localStorage.setItem('lastBuyer', JSON.stringify({name,email,phone}));
+
+  const total = renderCart(); // naira
+  if(!total){ alert('Your cart is empty'); return; }
+
+  // Generate code and create Firestore order
+  const code = generateOrderCode();
+  const orderPayload = {
+    code,
+    buyer:{name,email,phone},
+    cart: state.cart,
+    amount: total,
+    currency: 'NGN',
+    note: note || '',
+    status: 'pending', // admin will later mark as paid
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try{
+    const docRef = await db.collection('orders').add(orderPayload);
+
+    // Remember for "Payment Done"
+    lastOrderId = docRef.id;
+    lastOrderCode = code;
+
+    // Show code + instructions + enable "Payment Done"
+    orderCodeEl.textContent = code;
+    orderCodeBlock.style.display = 'block';
+    instructionsBlock.style.display = 'block';
+    doneBtn.style.display = 'inline-block';
+
+    // Update WhatsApp link with code and order id
+    const message = encodeURIComponent(
+      `Hello ${BANK_INFO.accountName},\nI have placed an order.\nOrder Code: ${code}\nRef: ${docRef.id}\nTotal: ₦${total.toLocaleString()}\nName: ${name}\nPhone: ${phone}`
+    );
+    whatsappLink.href = `https://wa.me/${SELLER_WHATSAPP}?text=${message}`;
+
+    // Clear cart locally (order is saved in Firestore)
+    state.cart = [];
+    saveCart();
+    setCartCount();
+    renderCart();
+    cartPanel.classList.remove('open');
+
+    alert(`✅ Order created.\nCode: ${code}\nYou can now make transfer and tap "Payment Done".`);
+  }catch(err){
+    console.error(err);
+    alert('Failed to create order. Please try again.');
+  }
+});
+
+
+// payment done handler
+doneBtn.addEventListener('click', async ()=>{
+  try{
+    // If customer skipped "Generate Order Code", create order now as a fallback
+    if(!lastOrderId){
+      const total = renderCart();
+      if(!total){ alert('Your cart is empty'); return; }
+      const name = custName.value.trim();
+      const email = custEmail.value.trim();
+      const phone = custPhone.value.trim();
+      if(!name || !email || !phone){ alert('Please fill name, email and phone.'); return; }
+
+      const code = generateOrderCode();
+      const orderPayload = {
+        code,
+        buyer:{name,email,phone},
+        cart: state.cart,
+        amount: total,
+        currency: 'NGN',
+        note: (orderNote.value||'').trim(),
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      const ref = await db.collection('orders').add(orderPayload);
+      lastOrderId = ref.id;
+      lastOrderCode = code;
+    }
+
+    // Mark that buyer has submitted payment (awaiting admin confirmation)
+    await db.collection('orders').doc(lastOrderId).update({
+      status: 'payment_submitted',
+      buyerConfirmedPayment: true,
+      buyerConfirmedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert('✅ Thanks! We will confirm your payment shortly.');
+    checkoutOverlay.style.display = 'none';
+  }catch(err){
+    console.error(err);
+    alert('Could not update order. Please try again.');
+  }
+});
+
+
+
+
+
+  </script>
+  
+  
+</body>
+</html>

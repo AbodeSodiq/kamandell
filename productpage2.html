@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details | MyStore</title>
+  <meta name="description" content="Shop premium sneakers at MyStore. High-performance, stylish, and durable footwear for every occasion.">
+  <style>
+   
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: white;
+      color: black;
+      overflow-x: hidden;
+     
+    }
+  </style>
+  <link rel="stylesheet" href="productpage.css">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Font Awesome (cart/search icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <div id="header-placeholder"></div>
+  
+  <div class="container">
+    <div id="product-details" class="product"></div>
+
+    <div class="related-section">
+      <h3>You May Also Like</h3>
+      <div class="carousel-wrapper">
+  <button id="related-prev" class="image-arrow left">&#10094;</button>
+  <div id="related-carousel" class="carousel"></div>
+  <button id="related-next" class="image-arrow right">&#10095;</button>
+</div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+
+     <!-- =================== Firebase SDKs (compat) =================== -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-storage-compat.js"></script>
+
+ <script>
+  fetch("header.html")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("header-placeholder").innerHTML = data;
+
+      // Load header.css
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = "header.css";
+      document.head.appendChild(link);
+
+      // Load header.js
+      const script = document.createElement("script");
+      script.src = "header.js";
+      script.onload = () => {
+        // ✅ Load product.js ONLY after header.js has finished
+        const pscript = document.createElement("script");
+        pscript.src = "productpage.js";
+        document.body.appendChild(pscript);
+      };
+      document.body.appendChild(script);
+    });
+</script>
+
+
+
+
+ 
+
+ 
+ 
+<script>
+  fetch("footer.html")
+    .then(res => res.text())
+    .then(data => {
+      document.getElementById("footer-placeholder").innerHTML = data;
+
+      // After injecting HTML, load footer.css and footer.js dynamically
+      loadFooterAssets();
+    });
+
+  function loadFooterAssets() {
+    // Load CSS
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "footer.css";
+    document.head.appendChild(link);
+
+    // Load JS
+    const script = document.createElement("script");
+    script.src = "footer.js";
+    document.body.appendChild(script);
+  }
+</script>
+<script src="productpage.js"></script>
+</body>
+</html>
